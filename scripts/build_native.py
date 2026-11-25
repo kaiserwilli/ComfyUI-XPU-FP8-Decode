@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Recreate the three original SYCL compile/device-link/host-link steps.
 Build in a standalone checkout, with the same Python as ComfyUI. No installation
-or dependency changes. The optional PIC device-link flag is experimental.
+or dependency changes. Device linking uses PIC; reject ELF TEXTREL by default.
 """
 import argparse
 import os
@@ -23,10 +23,10 @@ def main():
                         help="Intel oneAPI compiler root containing bin/icpx")
     parser.add_argument("--cxx", default="c++")
     parser.add_argument("--dry-run", action="store_true")
-    parser.add_argument("--pic-device-link", action="store_true",
-                        help="Experiment: add -fPIC to device-link stage")
-    parser.add_argument("--require-no-textrel", action="store_true",
-                        help="Fail without publishing built libraries if ELF TEXTREL is present")
+    parser.add_argument("--pic-device-link", action="store_true", default=True,
+                        help="Compatibility option; PIC device linking is always enabled")
+    parser.add_argument("--require-no-textrel", action="store_true", default=True,
+                        help="Compatibility option; TEXTREL rejection is always enabled")
     args = parser.parse_args()
     if not args.sycl_home:
         parser.error("Specify --sycl-home or SYCL_HOME")
@@ -78,7 +78,7 @@ def main():
                  "-fsycl-host-compiler-options=" + shlex.join(flags),
                  "-c", "-x", "c++", ROOT / "native_src" / subdir / "gemv.sycl", "-o", obj])
             run([icpx, obj, "-o", dlink, "-fsycl", "-fsycl-link", "--offload-compress",
-                 "-fsycl-targets=spir64", *(["-fPIC"] if args.pic_device_link else [])])
+                 "-fsycl-targets=spir64", "-fPIC"])
             run([cxx, obj, dlink, "-shared", f"-L{libdirs[0]}", "-lc10", "-lc10_xpu",
                  "-ltorch_cpu", "-ltorch_xpu", "-ltorch", "-ltorch_python",
                  f"-L{libdirs[1]}", "-lsycl", "-o", so])
@@ -91,9 +91,9 @@ def main():
             return
         if textrel:
             print("WARNING: ELF TEXTREL in " + ", ".join(textrel), flush=True)
-            if args.require_no_textrel:
-                raise SystemExit("No built libraries installed: TEXTREL check failed")
-        # Publish to this checkout only after all three builds succeed.
+            raise SystemExit("No built libraries installed: TEXTREL check failed")
+        # Publish to this checkout only after all three builds succeed without TEXTREL.
+        print("All three libraries passed ELF TEXTREL checks", flush=True)
         dest = ROOT / "lib"
         dest.mkdir(exist_ok=True)
         for so in products:

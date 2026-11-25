@@ -31,7 +31,7 @@ python scripts/build_native.py --sycl-home /opt/intel/oneapi/compiler/2026.2
 python tests/smoke_native.py
 ```
 
-Replace the compiler path if needed. The build helper derives the PyTorch and Python include paths from the running interpreter, builds into a temporary directory and copies the three resulting libraries to `lib/`. The helper recreates the original known build flags, with an optional `--pic-device-link` experiment. The build and all six native smoke comparisons passed on the tested Arc Pro B70 / PyTorch 2.14.1+xpu environment. The rebuilt libraries still contain ELF TEXTREL; distribute source only. End-to-end ComfyUI integration with these rebuilt libraries remains unverified. See `docs/BUILD_VALIDATION.md`. Use `--require-no-textrel` to reject newly built libraries containing TEXTREL. See `docs/RELEASE_REVIEW.md` for remaining work.
+Replace the compiler path if needed. The build helper derives the PyTorch and Python include paths from the running interpreter, builds into a temporary directory and copies the three resulting libraries to `lib/`. The helper includes `-fPIC` during SYCL device linking and rejects all newly built libraries if any contain ELF TEXTREL. This flag eliminated TEXTREL from all three libraries on the tested Arc Pro B70 / PyTorch 2.14.1+xpu environment; all six native smoke comparisons passed. The earlier non-PIC rebuild passed full ComfyUI integration (see `docs/INTEGRATION_VALIDATION.md`); integration with the PIC rebuild is pending. Source-only distribution remains the intended first release. See `docs/BUILD_VALIDATION.md` and `docs/RELEASE_REVIEW.md`.
 
 ## Install only after clean-build and smoke validation
 
