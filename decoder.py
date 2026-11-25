@@ -1,4 +1,10 @@
 """Fixed-storage XPU graph replay, independent reference cache, exact RoPE and fused projections."""
+# SPDX-License-Identifier: GPL-3.0-only
+# Portions of the attention/MLP integration adapt ComfyUI's implementation.
+# Copyright in upstream portions remains with their respective ComfyUI contributors.
+# Upstream: https://github.com/Comfy-Org/ComfyUI/blob/8f04fd6ecf4a548937971e840af2a985529fab76/comfy/text_encoders/llama.py
+# Modified 2026-11-25 UTC for XPU graph replay, fused projections and fixed-storage KV decoding.
+# See LICENSE and NOTICE.md.
 import logging
 import time
 import torch

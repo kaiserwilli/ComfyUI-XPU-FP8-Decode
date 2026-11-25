@@ -15,3 +15,7 @@ The earlier non-PIC rebuild passed full integration. The PIC device-link experim
 ## Technical validation complete
 
 Final PIC integration and cancellation recovery passed on the tested B70 stack; the operator confirmed idle model unload/reload and correct resulting images. Broader compatibility, active-generation low-VRAM offload and extended stress testing remain outside the validated scope. The remaining initial-release gates are provenance/license review and public publication. No binary distribution is planned.
+
+## License and attribution review
+
+GPL-3.0-only selected for project contributions; full GPL v3 text copied verbatim from the pinned ComfyUI revision. `NOTICE.md` identifies upstream adaptation, relevant dependency license sources, AI-assisted development and the source-only scope. `decoder.py` has a dated modification and upstream attribution notice. Source inspection found no additional explicit third-party copyright/attribution notices in the reviewed native and Triton kernel files; this is not a comprehensive provenance audit and does not prove independent origin of all code. No runtime logic changed. Before public publication, maintainer should confirm that any other manually imported or copied third-party code has been disclosed and that the project may be distributed under these terms. Repository remains private.

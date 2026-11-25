@@ -53,4 +53,4 @@ Load `workflows/multimodal_benchmark.json`, choose a non-private image, select t
 
 ## Licensing
 
-Publication is pending source provenance and license review. ComfyUI upstream uses GPL-3.0. GPL-3.0 is proposed for this project if all contributions can be distributed under compatible terms. This private review candidate does not grant a new license or assert ownership of third-party code. No model weights or original native binaries are included.
+This project is distributed under the GNU General Public License, version 3 (GPL-3.0-only), to the extent of the rights held by its contributors. See [LICENSE](LICENSE) and [NOTICE.md](NOTICE.md) for upstream attribution and third-party dependencies. Adapted upstream code retains its original applicable licensing terms. No model weights, dependency packages, or prebuilt native libraries are distributed. This is an independent experimental project, not an official ComfyUI or Intel release.
