@@ -1,0 +1,13 @@
+__pycache__/
+*.py[cod]
+*.so
+*.o
+*.ninja
+.ninja_*
+lib/
+build/
+.venv/
+*.log
+*.tar.gz
+*.zip
+.env
