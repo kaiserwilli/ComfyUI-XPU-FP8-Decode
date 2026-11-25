@@ -1,6 +1,6 @@
 # ComfyUI-XPU-FP8-Decode
 
-**Private release-review candidate, not a validated public release.** Experimental acceleration of native ComfyUI Qwen3-VL-4B FP8 autoregressive decoding on Intel XPU. Uses existing model weights, native vision prefill and conditioning, direct FP8 GEMV, fused projections, and XPU graph replay. No external inference server or additional model checkpoint.
+**Experimental release candidate, validated on the specific Intel Arc Pro B70 configuration below.** Experimental acceleration of native ComfyUI Qwen3-VL-4B FP8 autoregressive decoding on Intel XPU. Uses existing model weights, native vision prefill and conditioning, direct FP8 GEMV, fused projections, and XPU graph replay. No external inference server or additional model checkpoint.
 
 ## Measured results from the original implementation
 
@@ -13,14 +13,14 @@ Intel Arc Pro B70, Linux, ComfyUI commit `8f04fd6ecf4a548937971e840af2a985529fab
 | Optimized multimodal, greedy | 512 | 83.67 | 92.21 |
 | Optimized multimodal, sampled | 512 | 59.87 | 74.37 |
 
-Original native multimodal trace: 64 generated tokens in 17.565 s (3.64 overall), with native forward time roughly 0.18–0.23 s per decode step. This is not a matched 512-token benchmark. Full warm regression workflow: 102.31 s text-only optimization versus 53.77 s text + multimodal optimization, with changed seeds/token counts. Observed peak VRAM 21.20 GiB in the latter run. These are historical measurements of the original working installation, not measurements of rebuilt libraries from this checkout.
+Original native multimodal trace: 64 generated tokens in 17.565 s (3.64 overall), with native forward time roughly 0.18–0.23 s per decode step. This is not a matched 512-token benchmark. Full warm regression workflow: 102.31 s text-only optimization versus 53.77 s text + multimodal optimization, with changed seeds/token counts. Observed peak VRAM 21.20 GiB in the latter run. These are historical measurements of the original working installation. The corrected PIC build subsequently achieved 92.103 steady tokens/s (83.650 overall) for warm 512-token greedy multimodal generation, 95.711 steady tokens/s for 1024-token text generation, and 54.62 s for the warm full regression workflow. The warm multimodal token digest matched the earlier optimized implementation. See `docs/INTEGRATION_VALIDATION.md`.
 
 ## Scope and limitations
 
 - Only the Qwen3VL_4BConfig architecture and eligible XPU single-token decoding. The tested model uses scalar-scaled E4M3FN FP8 weights, BF16 activations, batch 1, and tuple KV storage. Other GPUs, models and software versions are unverified.
 - Native prefill, vision encoding, DeepStack and diffusion conditioning are not replaced. Original text-only path has less extensive residency/cache checks than the multimodal path. Do not use with concurrent generation, speculative decoding, model modifications, forced offload or untested cache layouts.
 - Graph/eager validation was exact on 127 multimodal decode positions. Original native logits differed: 125/127 matching greedy argmax on the same incoming token sequence, relative L2 0.552–3.472%. Identical native output is not guaranteed. Graph validation is not an independent autoregressive quality test.
-- Cancellation, forced offload, multiple images, long contexts and broader hardware compatibility remain unverified. Do not combine with another extension that patches the same generation method or registers the same native operator namespaces.
+- Cancellation and idle model unloading/reloading passed on the tested configuration. Active-generation low-VRAM/partial offload, multiple images, long contexts and broader hardware compatibility remain unverified. Do not combine with another extension that patches the same generation method or registers the same native operator namespaces.
 
 ## Build candidate (Linux)
 
@@ -31,7 +31,7 @@ python scripts/build_native.py --sycl-home /opt/intel/oneapi/compiler/2026.2
 python tests/smoke_native.py
 ```
 
-Replace the compiler path if needed. The build helper derives the PyTorch and Python include paths from the running interpreter, builds into a temporary directory and copies the three resulting libraries to `lib/`. The helper includes `-fPIC` during SYCL device linking and rejects all newly built libraries if any contain ELF TEXTREL. This flag eliminated TEXTREL from all three libraries on the tested Arc Pro B70 / PyTorch 2.14.1+xpu environment; all six native smoke comparisons passed. The earlier non-PIC rebuild passed full ComfyUI integration (see `docs/INTEGRATION_VALIDATION.md`); integration with the PIC rebuild is pending. Source-only distribution remains the intended first release. See `docs/BUILD_VALIDATION.md` and `docs/RELEASE_REVIEW.md`.
+Replace the compiler path if needed. The build helper derives the PyTorch and Python include paths from the running interpreter, builds into a temporary directory and copies the three resulting libraries to `lib/`. The helper includes `-fPIC` during SYCL device linking and rejects all newly built libraries if any contain ELF TEXTREL. This flag eliminated TEXTREL from all three libraries on the tested Arc Pro B70 / PyTorch 2.14.1+xpu environment; all six native smoke comparisons passed. Both the earlier non-PIC rebuild and the corrected PIC rebuild passed full ComfyUI integration. The corrected libraries were byte-compared to the tested PIC candidate, verified free of TEXTREL, and confirmed mapped into the running process. Cancellation and idle model unloading/reloading passed. See `docs/INTEGRATION_VALIDATION.md`. Source-only distribution remains the intended first release. See `docs/BUILD_VALIDATION.md` and `docs/RELEASE_REVIEW.md`.
 
 ## Install only after clean-build and smoke validation
 

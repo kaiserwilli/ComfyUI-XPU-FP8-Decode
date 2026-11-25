@@ -11,3 +11,7 @@
 ## Follow-up status
 
 The earlier non-PIC rebuild passed full integration. The PIC device-link experiment removed TEXTREL from all three shared libraries and passed all six smoke tests. The build helper now always applies `-fPIC` at device link and rejects TEXTREL. PIC integration, cancellation/offload tests, source provenance and licensing remain pending. Historical statements above describe the initial candidate; no public release yet.
+
+## Technical validation complete
+
+Final PIC integration and cancellation recovery passed on the tested B70 stack; the operator confirmed idle model unload/reload and correct resulting images. Broader compatibility, active-generation low-VRAM offload and extended stress testing remain outside the validated scope. The remaining initial-release gates are provenance/license review and public publication. No binary distribution is planned.

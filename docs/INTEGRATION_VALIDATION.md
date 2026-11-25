@@ -18,3 +18,18 @@ Numerical evidence: 128-token mm_validate with 127 replays reproduced the earlie
 ## Subsequent PIC build
 
 The later device-link PIC build eliminated TEXTREL in all three libraries and passed all six standalone native smoke tests. The integration metrics above apply to the earlier non-PIC rebuild only; PIC-built libraries still require an integration check.
+
+## Final PIC integration and recovery validation (2026-11-25 UTC)
+
+All three installed native libraries matched the isolated PIC-built candidates byte-for-byte, contained no ELF TEXTREL, and were mapped into the running ComfyUI process.
+
+| Test | Generated tokens | Overall tokens/s | Steady tokens/s | Full prompt time (s) |
+|---|---:|---:|---:|---:|
+| Warm multimodal greedy | 512 | 83.650 | 92.103 | 6.66 |
+| After cancellation | 512 | 83.615 | 91.908 | 6.65 |
+| After idle unload/reload | 512 | 83.390 | 91.436 | 103.90 |
+| Warm text greedy within full regression | 1024 | 90.952 | 95.711 | — |
+
+Interrupted a requested 4096-token multimodal generation at approximately 257 generated tokens. The next 512-token generation completed without restart and reproduced the earlier warm greedy token digest `0d94945735fc4e4a10411535f71209773a4e6a64954522d97c21b7ee15cac495`. The operator confirms idle model unloading/free-memory and correct resulting images. Before/after unload memory readings were not supplied. This is not a test of active-generation partial or forced low-VRAM offload. The first cold 512-token run had a different token digest; exact equality across all cold/warm runs is not claimed.
+
+Full regression took 485.67 s on first run and 54.62 s warm; decoder throughput remained normal, and the cause of additional first-run time was not isolated by the filtered journal. Final sampled idle VRAM was 19691 MiB; peak usage was not measured. No unexpected accelerator errors were reported in the supplied filtered journal. Initial experimental technical validation is complete on this configuration; license/provenance and publication remain pending. No general hardware or model compatibility is claimed.

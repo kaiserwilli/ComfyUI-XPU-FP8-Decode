@@ -18,3 +18,7 @@ Pending: test rebuilt extension in ComfyUI, cancellation/offload recovery, match
 ## PIC device-link follow-up (2026-11-25 UTC)
 
 Rebuilt all three libraries with `--pic-device-link` (adds `-fPIC` to the SYCL device-link command). `readelf -d` no longer showed TEXTREL for any library. All six native smoke tests again returned relative L2=0.00000000 and finite=True. The ignored subgroup-size attribute warnings from host compilation remain distinct from the corrected ELF relocations. PIC device linking and strict rejection of TEXTREL are now mandatory in the build helper; the earlier optional CLI flags remain accepted for compatibility. Full ComfyUI integration with PIC-built libraries is not yet tested. The earlier non-PIC build passed integration; see `INTEGRATION_VALIDATION.md`.
+
+## Final PIC integration
+
+The corrected PIC-built libraries were installed and confirmed byte-identical to the standalone candidate, free of ELF TEXTREL, and mapped in the live ComfyUI process. Full integration, cancellation recovery and idle unload/reload passed. See `INTEGRATION_VALIDATION.md` for final metrics and limitations.
